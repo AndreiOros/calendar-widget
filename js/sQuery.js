@@ -291,8 +291,10 @@ var sQ = (function(){
     SelfQuery.prototype.each = function(callback){
         for(let i = 0; i < this.content.length; i++){
             let el = new SelfQuery(this.content[i]);
-            callback(el);
+            callback(el, i, this);
         }
+
+        return this;
     }
 
     return function(query){

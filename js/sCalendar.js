@@ -34,6 +34,79 @@ var sCalendar = (function(){
         this.buildHeader().buildBody();
     }
 
+    sCalendar.isLeap = function(year, month){
+        if(month !== 1){
+            return 1;
+        }
+        
+        if(year % 4 === 0){
+            if(year % 100 === 0){
+                if(year % 400 === 0){
+                    return 2;
+                }
+                else {
+                    return 1;
+                }
+            }
+            else {
+                return 2;
+            }
+        }
+        else {
+            return 1;
+        }
+    }
+
+    sCalendar.info = function(date){
+        return [
+            date.getFullYear(),
+            date.getMonth(),
+            MONTHS[month][isLeap(year, month)],
+            new Date(year, month, 1).getDay()
+        ];
+    }
+
+    sCalendar.comp = function(l, r){
+        if(l[0] === r[0]){
+            if(l[1] === r[1]){
+                if(l[2] < r[2]){
+                    return -1
+                }
+                else if(l[2] > r[2]){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+            else if(l[1] < r[1]){
+                return -1;
+            }
+            else{
+                return 1;
+            }
+        }
+        else if(l[0] < r[0]){
+            return -1;
+        }
+        else{
+            return 1;
+        }
+
+        return 2;
+    }
+
+    sCalendar.isIn = function(date, interval){
+        if(interval[0] === null || interval[1] === null){
+            return false;
+        }
+
+        let c1 = (comp(date, interval[0]) === 1 || comp(date, interval[0]) === 0);
+        let c2 = (comp(date, interval[1]) === -1 || comp(date, interval[1]) === 0);
+
+        return (c1 && c2);
+    }
+
     sCalendar.prototype.buildHeader = function(){
         this.container.createChild('div', {'class' : CLASS.header}, 0)
             .children()
@@ -41,7 +114,7 @@ var sCalendar = (function(){
             .createChild('div', {'class' : CLASS.label})
             .createChild('div', {'class' : CLASS.button + ' ' + CLASS.next});
         
-        let days_container = this.container.createChild('div', {'class' : CLASS.days}, 0)
+        let days_container = this.container.createChild('div', {'class' : CLASS.days})
             .children().last();
 
         DAYS.forEach(function(day){
@@ -59,20 +132,15 @@ var sCalendar = (function(){
             dates_container.createChild('div', {'class' : CLASS.row});
         }
 
-        let dates_row = dates_container.children();
-
-        dates_row.each(function(el){
+        let dates_rows = dates_container.children().each(function(el){
             for(let i = 0; i < COLS; i++){
-                el.createChild('div', {'class' : CLASS.normal}, 0, '1');
+                el.createChild('div', {'class' : CLASS.normal});
             }
         });
 
         return this;
     }
 
-
-
     return sCalendar;
-
-
+    
 })();
