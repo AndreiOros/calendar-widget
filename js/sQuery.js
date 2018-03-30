@@ -1,26 +1,27 @@
 var sQ = (function(){
 
     function SelfQuery(query){
-        this.content = SelfQuery.kindOf(query);
+        this.content = SelfQuery._kindOf(query);
+        this.length = (this.content) ? this.content.length : null;
     }
     
     /* check to see if parameter is an NodeList */
-    SelfQuery.isNodeList = function(query){
+    SelfQuery._isNodeList = function(query){
         return NodeList.prototype.isPrototypeOf(query);
     }
     
     /* checks for DOM Element */
-    SelfQuery.isElement = function(query){
+    SelfQuery._isElement = function(query){
         return query instanceof Element;
     }
     
     /* check for array of DOM Elements */
-    SelfQuery.isArrayOfElements = function(query){
+    SelfQuery._isArrayOfElements = function(query){
         if(!Array.isArray(query)){
             return false;
         }
         query.forEach(function(el){
-            if(!SelfQuery.isElement(el)){
+            if(!SelfQuery._isElement(el)){
                 return false;
             }
         });
@@ -28,7 +29,7 @@ var sQ = (function(){
     }
     
     /* if query is string then Query for Element/s */
-    SelfQuery.searchFor = function(query){
+    SelfQuery._searchFor = function(query){
         let el_nodes = document.querySelectorAll(query);
         let el_array = Array.from(el_nodes);
     
@@ -40,17 +41,17 @@ var sQ = (function(){
         }
     }
     
-    SelfQuery.kindOf = function(query){
+    SelfQuery._kindOf = function(query){
         if(typeof(query) === 'string'){
-            return SelfQuery.searchFor(query);
+            return SelfQuery._searchFor(query);
         }
-        else if(SelfQuery.isElement(query)){
+        else if(SelfQuery._isElement(query)){
             return [query];
         }
-        else if(SelfQuery.isArrayOfElements(query)){
+        else if(SelfQuery._isArrayOfElements(query)){
             return query;
         }
-        else if(SelfQuery.isNodeList(query)){
+        else if(SelfQuery._isNodeList(query)){
             return Array.from(query);
         }
         else{
@@ -76,6 +77,110 @@ var sQ = (function(){
         return new SelfQuery(parents);
     }
     
+    SelfQuery._classify = function(element){
+        let arr = Array.from(element.classList);
+        let clss = '';
+        
+        arr.forEach(function(el){
+            clss += (el !== '') ? '.' + el : '';
+        });
+        
+        return clss;
+    }
+    
+    SelfQuery._objectifyNodeMap = function(element){
+        let NodeMap = element.attributes;
+        let obj = {};
+        
+        for (let i = 0; i < NodeMap.length; i++){
+            obj[NodeMap[i].nodeName] = NodeMap[i].nodeValue;
+        }
+        
+        return obj;
+    }
+    
+    SelfQuery._info = function(element){
+        if(!SelfQuery._isElement(element)){
+            return { };
+        }
+        
+        return {
+            'tag': element.tagName,
+            'class': SelfQuery._classify(element),
+            'id': (element.id !== '') ? '#' + element.id : '',
+            'attr': SelfQuery._objectifyNodeMap(element)
+        }
+    }
+    
+    SelfQuery.prototype.info = function(index = 0){
+        if(index >= 0){
+            return SelfQuery._info(this.content[index]);
+        }
+        else{
+            let arr = [];
+            
+            this.content.forEach(function(e){
+                arr.push(SelfQuery._info(e));    
+            })
+            
+            return arr;
+        }
+    }
+    
+    SelfQuery.prototype.contains = function(query){
+    }
+    
+    SelfQuery._buildFindQuery = function(INF){
+        return INF.tag 
+                      + ((INF.id !== '') ? INF.id : '') 
+                      + ((INF.class !== '') ? INF.class : '');
+    }
+    
+    SelfQuery.prototype.isNull = function(){
+        return 
+               (this.content === null
+                        &&
+               this.length === null);
+    }
+    
+    //modify to accept node type
+    //it looks ugly
+    SelfQuery.prototype.find = function(query, index = -1){
+        let self = this;
+        
+        function findOne(index, or = true){
+            let QR, INF;
+            
+            INF = self.e(index);
+            QR = INF.querySelectorAll(query);
+            
+            if(or){
+                return new SelfQuery(QR);
+            }
+            else{
+                return QR;
+            }
+        }
+        
+        if(index >= 0){
+            return findOne(index);
+        }
+        else{
+            let arr = [];
+            
+            this.content.forEach(function(el, i){
+                let nel = findOne(i, false);
+                
+                for(let j = 0; j < nel.length; j++){
+                    arr.push(nel[j]);
+                }
+                
+            });
+            
+            return new SelfQuery(arr);
+        }   
+    }
+    
     /* get the Children Node/s */
         
         /* IMPORTANT 
@@ -92,7 +197,7 @@ var sQ = (function(){
     SelfQuery.prototype.children = function(index = 0){
         let childs = [];
     
-        if(index >= 0){
+        if(index >= 0){  
             let temp_childs = this.content[index].childNodes;
 
             temp_childs.forEach(function(node){
@@ -210,13 +315,13 @@ var sQ = (function(){
         let arrayOfChilds = [];
         let ok = true;
     
-        if(SelfQuery.isElement(elements)){
+        if(SelfQuery._isElement(elements)){
             arrayOfChilds[0] = elements;
         }
-        else if(SelfQuery.isArrayOfElements(elements)){
+        else if(SelfQuery._isArrayOfElements(elements)){
             arrayOfChilds = elements;
         }
-        else if(SelfQuery.isNodeList(elements)){
+        else if(SelfQuery._isNodeList(elements)){
             arrayOfChilds = Array.from(elements);
         }
         else{
@@ -235,7 +340,7 @@ var sQ = (function(){
     }
     
     
-    SelfQuery.prototype.css = function(prop, val, index = 0){
+    SelfQuery.prototype.css = function(prop, val, index = -1){
     
         if(index >= 0){
             this.content[index].style[prop] = val;
@@ -285,6 +390,60 @@ var sQ = (function(){
             })
         }
 
+        return this;
+    }
+    
+    SelfQuery.prototype.addClass = function(classList, index = 0){
+        let tempClass = classList.split(' ');
+        let self = this;
+        
+        if(index >= 0){
+            tempClass.forEach(function(cls){
+               self.content[index].classList.add(cls); 
+            });
+        }
+        else{
+            tempClass.forEach(function(cls){
+               self.content.forEach(function(el){
+                  el.classList.add(cls);  
+               });
+            });
+        }
+        
+        return this;
+    }
+    
+    SelfQuery.prototype.removeClass = function(classList, index = 0){
+        let tempClass = classList.split(' ');
+        let self = this;
+        
+        if(index >= 0){
+            tempClass.forEach(function(cls){
+               self.content[index].classList.remove(cls); 
+            });
+        }
+        else{
+            tempClass.forEach(function(cls){
+               self.content.forEach(function(el){
+                  el.classList.remove(cls);  
+               });
+            });
+        }
+        
+        return this;
+    }
+    
+    SelfQuery.prototype.toggleClass = function(cls){
+        let self = this;
+        if(index >= 0){
+           self.content[index].classList.toggle(cls); 
+        }
+        else{
+           self.content.forEach(function(el){
+              el.classList.toggle(cls);  
+            });
+        }
+        
         return this;
     }
 

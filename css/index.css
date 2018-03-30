@@ -4,11 +4,27 @@ body{
   position: relative;
   width: 100vw;
   height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+/*
+sQ('.sCal_row:nth-of-type(2n)').find('div:nth-of-type(3n)').css('background-color', 'red')
+SelfQuery {content: Array(6), length: 6}
+sQ('.sCal_row:nth-of-type(2n)').find('div:nth-of-type(1n)').css('background-color', 'red')
+SelfQuery {content: Array(21), length: 21}
+sQ('.sCal_row:nth-of-type(2n)').find('div:nth-of-type(2n)').css('background-color', 'blue')
+SelfQuery {content: Array(9), length: 9}
+sQ('.sCal_row:nth-of-type(2n - 1)').find('div:nth-of-type(2n)').css('background-color', 'green')
+SelfQuery {content: Array(9), length: 9}
+sQ('.sCal_row:nth-of-type(2n - 1)').find('div:nth-of-type(2n - 1)').css('background-color', 'purple')
+*/
 
+/*
+#calendar, #calendar {
 
-#calendar, #calendar *{
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -35,6 +51,10 @@ body{
   align-items: center;
   justify-content: space-between;
 
+}
+
+#calendar *{
+    display: flex;
 }
 
 #calendar .cal-header .cal-button{
@@ -183,3 +203,4 @@ body{
   background-color: #333;
   color: #000;
 }
+*/

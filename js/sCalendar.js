@@ -10,19 +10,22 @@ var sCalendar = (function(){
     const TODAY_INFO = [TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate()];
 
     const CLASS = {
-        'normal' : 'cal-normal',
-        'today' : 'cal-today',
-        'other' : 'cal-other-month',
-        'unusable' : 'cal-unusable',
-        'selected' : 'cal-selected',
-        'row' : 'cal-row',
-        'header' : 'cal-header',
-        'button' : 'cal-button',
-        'label' : 'cal-label',
-        'prev' : 'cal-prev',
-        'next' : 'cal-next',
-        'days' : 'cal-days',
-        'dates' : 'cal-dates'
+     //======================================//
+        'container'      :   'sCal_container'         ,
+        'header'        :   'sCal_header'       ,
+        'button'        :   'sCal_button'       ,
+        'next'          :   'sCal_next'         ,
+        'prev'          :   'sCal_prev'         ,
+        'label'         :   'sCal_label'        ,
+        'days'          :   'sCal_days'         ,
+        'dates'         :   'sCal_dates'        ,
+        'row'           :   'sCal_row'          ,
+        'normal'        :   'sCal_normal'       ,
+        'today'         :   'sCal_today'        ,
+        'other'         :   'sCal_other'        ,
+        'selected'      :   'sCal_selected'     ,
+        'unusable'      :   'sCal_unusable'     
+     //======================================//
     }
 
     const ROWS = 6;
@@ -32,6 +35,10 @@ var sCalendar = (function(){
     function sCalendar(parent){
         this.container = sQ(parent);
         this.buildHeader().buildBody();
+    }
+    
+    sCalendar.prototype.components = {
+        
     }
 
     sCalendar.isLeap = function(year, month){
@@ -108,10 +115,12 @@ var sCalendar = (function(){
     }
 
     sCalendar.prototype.buildHeader = function(){
-        this.container.createChild('div', {'class' : CLASS.header}, 0)
+        this.container
+            .addClass(CLASS.container)
+            .createChild('div', {'class' : CLASS.header}, 0)
             .children()
             .createChild('div', {'class' : CLASS.button + ' ' + CLASS.prev})
-            .createChild('div', {'class' : CLASS.label})
+            .createChild('div', {'class' : CLASS.label}, 0, 'Jul 2018')
             .createChild('div', {'class' : CLASS.button + ' ' + CLASS.next});
         
         let days_container = this.container.createChild('div', {'class' : CLASS.days})
@@ -119,6 +128,13 @@ var sCalendar = (function(){
 
         DAYS.forEach(function(day){
             days_container.createChild('div', null, 0, day)
+        });
+        
+        sQ('.' + CLASS.button + '.' + CLASS.prev).each(function(el){
+            el.e(0).innerHTML = '&#8249;';
+        });
+        sQ('.' + CLASS.button + '.' + CLASS.next).each(function(el){
+            el.e(0).innerHTML = '&#8250;';
         });
 
         return this;
@@ -140,7 +156,20 @@ var sCalendar = (function(){
 
         return this;
     }
+    
+    sCalendar.prototype.updateLabel = function(date){
+        
+    }
+    
+    sCalendar.prototype.buildDatesArray = function(){
+        
+    }
 
     return sCalendar;
     
 })();
+
+
+document.addEventListener('DOMContentLoaded', function(){
+    var a = new sCalendar('#calendar');
+})
